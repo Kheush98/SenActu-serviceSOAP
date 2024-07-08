@@ -1,6 +1,7 @@
 package esp.sn.webservicesoap.services;
 
 import esp.sn.webservicesoap.model.User;
+import esp.sn.webservicesoap.repository.UserRepository;
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebParam;
 import jakarta.jws.WebService;
@@ -11,19 +12,27 @@ import java.util.List;
 @WebService(serviceName = "UserWS")
 public class UserService {
 
-    private static final List<User> users = new ArrayList<>();
+    private static final List<User> users;
+    static UserRepository userRepository = new UserRepository();
+
+    static {
+        users = userRepository.getUsers();
+    }
+
     @WebMethod
     public String addUser(@WebParam(name = "username") String username, @WebParam(name = "password") String password, @WebParam(name = "role") String role) {
+        long id = userRepository.addUser(username, password, role);
         for (User user : users) {
             if (user.getUsername().equals(username))
                 return "L'utilisateur existe deja";
         }
-        users.add(new User(username, password, role));
+        users.add(new User(id, username, password, role));
         return "Utilisateur ajouté";
     }
 
     @WebMethod
     public String updateUser(@WebParam(name = "username") String username, @WebParam(name = "password") String password, @WebParam(name = "role") String role) {
+        userRepository.updateUser(username, password, role);
         for (User user : users) {
             if (user.getUsername().equals(username)) {
                 user.setPassword(password);
@@ -42,6 +51,7 @@ public class UserService {
 
     @WebMethod
     public String deleteUser(@WebParam(name = "username") String username) {
+        userRepository.deleteUser(username);
         for (User user : users) {
             if (user.getUsername().equals(username)){
                 users.remove(user);
