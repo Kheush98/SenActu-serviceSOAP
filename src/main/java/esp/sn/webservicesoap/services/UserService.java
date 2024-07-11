@@ -37,9 +37,10 @@ public class UserService {
         if (!isTokenValid(token)) {
             return "Invalid token";
         }
-        userRepository.updateUser(username, password, role);
+
         for (User user : users) {
             if (user.getUsername().equals(username)) {
+                userRepository.updateUser(username, password, role);
                 user.setPassword(password);
                 user.setRole(role);
                 return "Utilisateur modifié";
@@ -58,14 +59,30 @@ public class UserService {
     }
 
     @WebMethod
+    public User userByUsername(@WebParam(name = "username") String username, @WebParam(name = "token") String token) {
+        User _user = null;
+        if (!isTokenValid(token)) {
+            return _user;
+        }
+
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                _user = user;
+            }
+        }
+
+        return _user;
+    }
+
+    @WebMethod
     public String deleteUser(@WebParam(name = "username") String username, @WebParam(name = "token") String token) {
         if (!isTokenValid(token)) {
             return "Invalid token";
         }
-        userRepository.deleteUser(username);
         for (User user : users) {
             if (user.getUsername().equals(username)){
                 users.remove(user);
+                userRepository.deleteUser(username);
                 return "Utilisateur supprimé";
             }
         }
